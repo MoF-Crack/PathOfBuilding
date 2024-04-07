@@ -117,13 +117,14 @@ You can get this from your web browser's cookies while logged into the Path of E
 	self.controls.sessionPrivacySettings = new("ButtonControl", {"LEFT",self.controls.sessionCancel,"RIGHT"}, 8, 0, 120, 20, "Privacy Settings", function()
 		OpenURL('https://www.pathofexile.com/my-account/privacy')
 	end)
-	self.controls.sessionInput = new("EditControl", {"TOPLEFT",self.controls.sessionRetry,"BOTTOMLEFT"}, 0, 8, 350, 20, "", "POESESSID", "%X", 32)
+ -- 在这个函数/方法/类中，创建了一个名为sessionInput的编辑控件，用于输入POE（Path of Exile）游戏的会话ID
+ 	self.controls.sessionInput = new("EditControl", {"TOPLEFT",self.controls.sessionRetry,"BOTTOMLEFT"}, 0, 8, 350, 20, "", "Cookie", "%X", 999)
 	self.controls.sessionInput:SetProtected(true)
 	self.controls.sessionGo = new("ButtonControl", {"LEFT",self.controls.sessionInput,"RIGHT"}, 8, 0, 60, 20, "Go", function()
 		self:DownloadCharacterList()
 	end)
 	self.controls.sessionGo.enabled = function()
-		return #self.controls.sessionInput.buf == 32
+		return #self.controls.sessionInput.buf == 999
 	end
 
 	-- Stage: select character and import data
@@ -397,7 +398,7 @@ function ImportTabClass:DownloadCharacterList()
 	  -- Trim Trailing/Leading spaces
 	local accountName = self.controls.accountName.buf:gsub('%s+', '')
 	local realm = realmList[self.controls.accountRealm.selIndex]
-	local sessionID = #self.controls.sessionInput.buf == 32 and self.controls.sessionInput.buf or (main.gameAccounts[accountName] and main.gameAccounts[accountName].sessionID)
+	local sessionID = #self.controls.sessionInput.buf == 999 and self.controls.sessionInput.buf or (main.gameAccounts[accountName] and main.gameAccounts[accountName].sessionID)
 	launch:DownloadPage(realm.hostName.."character-window/get-characters?accountName="..accountName.."&realm="..realm.realmCode, function(response, errMsg)
 		if errMsg == "Response code: 401" then
 			self.charImportStatus = colorCodes.NEGATIVE.."Sign-in is required."
@@ -477,8 +478,8 @@ function ImportTabClass:DownloadCharacterList()
 
 			-- We only get here if the accountname was correct, found, and not private, so add it to the account history.
 			self:SaveAccountHistory()
-		end, sessionID and { header = "Cookie: POESESSID=" .. sessionID })
-	end, sessionID and { header = "Cookie: POESESSID=" .. sessionID })
+		end, sessionID and { header = "Cookie: " .. sessionID })
+	end, sessionID and { header = "Cookie: " .. sessionID })
 end
 
 function ImportTabClass:BuildCharacterList(league)
